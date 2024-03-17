@@ -1,51 +1,55 @@
 #include <iostream>
 
 int main() {
-    int x, y, wynik;
-    char operacja;
+    float x, y, result;
+    char operation;
 
-    std::cout << "Podaj pierwsza liczbe: ";
+    std::cout << "Give first number: ";
     std::cin >> x;
 
-    std::cout << "Podaj operacje (+ lub -): ";
-    std::cin >> operacja;
+    std::cout << "Select operation (+,-,*,/): ";
+    std::cin >> operation;
 
-    std::cout << "Podaj druga liczbe: ";
+    std::cout << "Give second number: ";
     std::cin >> y;
 
     asm (
-        "mov %[x], %%eax\n\t"
-        "mov %[y], %%ebx\n\t"
-        "cmp $'+', %[operacja]\n\t"
+        "fld %[x]\n\t"
+        "fld %[y]\n\t"
+        "cmp $'+', %[operation]\n\t"
         "je addition\n\t"
-        "cmp $'-', %[operacja]\n\t"
+        "cmp $'-', %[operation]\n\t"
         "je subtraction\n\t"
-        "jmp koniec\n\t"
+        "cmp $'*', %[operation]\n\t"
+        "je multiplication\n\t"
+        "cmp $'/', %[operation]\n\t"
+        "je division\n\t"
+        "jmp finish\n\t"
 
         "addition:\n\t"
-        "add %%ebx, %%eax\n\t"
-        "jmp koniec\n\t"
+        "faddp\n\t"
+        "jmp finish\n\t"
 
         "subtraction:\n\t"
-        "sub %%ebx, %%eax\n\t"
-        "jmp koniec\n\t"
+        "fsubp\n\t"
+        "jmp finish\n\t"
 
-        "subtraction:\n\t"
-        "sub %%ebx, %%eax\n\t"
-        "jmp koniec\n\t"
+        "multiplication:\n\t"
+        "fmulp\n\t"
+        "jmp finish\n\t"
 
-        "subtraction:\n\t"
-        "sub %%ebx, %%eax\n\t"
-        "jmp koniec\n\t"
+        "division:\n\t"
+        "fdivp\n\t"
+        "jmp finish\n\t"
 
-        "koniec:\n\t"
-        "mov %%eax, %[wynik]"
-        : [wynik] "=r" (wynik)
-        : [x] "r" (x), [y] "r" (y), [operacja] "r" (operacja)
-        : "%eax", "%ebx"
+        "finish:\n\t"
+        "fstp %[result]"
+        : [result] "=t" (result) // Poprawiona składnia "=t"
+        : [x] "m" (x), [y] "m" (y), [operation] "m" (operation)
+        : "memory"
     );
 
-    std::cout << "Wynik: " << wynik << std::endl;
+    std::cout << "Result: " << result << std::endl;
 
     return 0;
 }
