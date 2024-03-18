@@ -1,55 +1,65 @@
 #include <iostream>
 
+using namespace std;
+
+float calculate(float x, float y, char op) {
+    float result;
+
+    asm volatile (
+        "movss %1, %%xmm0 \n"   // Przenoszenie wartości x do xmm0
+        "movss %2, %%xmm1 \n"   // Przenoszenie wartości y do xmm1
+
+        "cmp $'+', %3 \n"       // If "+" jump to addition
+        "je addition \n"
+        "cmp $'-', %3 \n"       // If "-" jump to subtraction
+        "je subtraction \n"
+        "cmp $'*', %3 \n"       // If "*" jump to multiplication
+        "je multiplication \n"
+        "cmp $'/', %3 \n"       // If "/" jump to division
+        "je division \n"
+        "jmp end \n"            // Jump to end
+
+        "addition: \n"
+        "addss %%xmm1, %%xmm0 \n"
+        "jmp end \n"
+
+        "subtraction: \n"
+        "subss %%xmm1, %%xmm0 \n" // Subtract xmm1 from xmm0
+        "jmp end \n"            // Jump to end
+
+        "multiplication: \n"
+        "mulss %%xmm1, %%xmm0 \n" // Multiply xmm0 by xmm1
+        "jmp end \n"            // Jump to end
+
+        "division: \n"
+        "divss %%xmm1, %%xmm0 \n" // Divide xmm0 by xmm1
+        "jmp end \n"            // Jump to end
+
+        "end: \n"
+        "movss %%xmm0, %0 \n"   // Moving output form xmm0 to result
+        : "=m" (result)         // Output - result
+        : "m" (x), "m" (y), "r" (op) // Input - x, y, op
+        : "xmm0", "xmm1"        // SSE registers xmm0 i xmm1 used in SSE instructions
+        );
+
+    return result;
+}
+
 int main() {
-    float x, y, result;
+    float num1, num2;
     char operation;
 
-    std::cout << "Give first number: ";
-    std::cin >> x;
+    cout << "Enter operation(+,-,*,/): ";
+    cin >> num1 >> operation >> num2;
 
-    std::cout << "Select operation (+,-,*,/): ";
-    std::cin >> operation;
+    if (cin && (operation == '+' || operation == '-' || operation == '*' || operation == '/')) {
+        float result = calculate(num1, num2, operation);
 
-    std::cout << "Give second number: ";
-    std::cin >> y;
-
-    asm (
-        "fld %[x]\n\t"
-        "fld %[y]\n\t"
-        "cmp $'+', %[operation]\n\t"
-        "je addition\n\t"
-        "cmp $'-', %[operation]\n\t"
-        "je subtraction\n\t"
-        "cmp $'*', %[operation]\n\t"
-        "je multiplication\n\t"
-        "cmp $'/', %[operation]\n\t"
-        "je division\n\t"
-        "jmp finish\n\t"
-
-        "addition:\n\t"
-        "faddp\n\t"
-        "jmp finish\n\t"
-
-        "subtraction:\n\t"
-        "fsubp\n\t"
-        "jmp finish\n\t"
-
-        "multiplication:\n\t"
-        "fmulp\n\t"
-        "jmp finish\n\t"
-
-        "division:\n\t"
-        "fdivp\n\t"
-        "jmp finish\n\t"
-
-        "finish:\n\t"
-        "fstp %[result]"
-        : [result] "=t" (result) // Poprawiona składnia "=t"
-        : [x] "m" (x), [y] "m" (y), [operation] "m" (operation)
-        : "memory"
-    );
-
-    std::cout << "Result: " << result << std::endl;
+        cout << "Result: " << result << "\n";
+    }
+    else {
+        cout << "Invalid input!" << endl;
+    }
 
     return 0;
 }
