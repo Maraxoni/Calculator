@@ -20,8 +20,8 @@ float calculate(float x, float y, char op) {
         "jmp end \n"            // Jump to end
 
         "addition: \n"
-        "addss %%xmm1, %%xmm0 \n"
-        "jmp end \n"
+        "addss %%xmm1, %%xmm0 \n" // Add xmm1 to xmm0
+        "jmp end \n"            // Jump to end
 
         "subtraction: \n"
         "subss %%xmm1, %%xmm0 \n" // Subtract xmm1 from xmm0
